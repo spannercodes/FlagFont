@@ -44,7 +44,7 @@ mkdir("./assets/flagfont/font")
 
 filenames = listdir(FLAG_DIR)
 country = [f for f in filenames if f.startswith("flag_")]
-pride = [f for f in filenames if not f in country]
+pride = [f for f in filenames if not f in country and not f=="blank.png"]
 
 def get_atlas_size(images):
     area = 1

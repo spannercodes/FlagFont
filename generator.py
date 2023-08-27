@@ -1,12 +1,13 @@
 from os import listdir,mkdir,makedirs
-from os.path import join
+from os.path import join,dirname,abspath
 from shutil import rmtree
 from math import floor,ceil,sqrt,log
 from PIL import Image
 
+BASE = abspath(dirname(__file__))
 IMAGE_SIZE = 8
 CHARACTER_START = 0xE000
-FLAG_DIR = "./flags"
+FLAG_DIR = join(BASE,"./flags")
 
 """
 steps:
@@ -29,18 +30,18 @@ public final class FlagFont {
 """
 
 try:
-    rmtree("./assets")
+    rmtree(join(BASE,"./assets"))
 except:
     pass
 try:
-    rmtree("./src")
+    rmtree(join(BASE,"./src"))
 except:
     pass
 
-makedirs("./assets/flagfont")
-makedirs("./assets/flagfont/textures/font")
-makedirs("./src/main/java/com/spanner/flagfont/")
-mkdir("./assets/flagfont/font")
+makedirs(join(BASE,"./assets/flagfont"))
+makedirs(join(BASE,"./assets/flagfont/textures/font"))
+makedirs(join(BASE,"./src/main/java/com/spanner/flagfont/"))
+mkdir(join(BASE,"./assets/flagfont/font"))
 
 filenames = listdir(FLAG_DIR)
 country = [f for f in filenames if f.startswith("flag_")]
@@ -67,7 +68,7 @@ def create_atlas(images,name):
         atlas.paste(img,pos)
         img.close()
         n+=1
-    atlas.save(f"assets/flagfont/textures/font/{name}.png")
+    atlas.save(join(BASE,f"assets/flagfont/textures/font/{name}.png"))
     return atlas_size
 
 def create_font_json(images,name,atlas_size):
@@ -97,7 +98,7 @@ def create_font_json(images,name,atlas_size):
         }}
     ]
 }}"""
-    with open(f"assets/flagfont/font/{name}.json","w+") as f:
+    with open(join(BASE,f"assets/flagfont/font/{name}.json"),"w+") as f:
         f.write(s)
     return flag_char_map
 
@@ -120,7 +121,7 @@ public final class FlagFont {{
     body = ""
     for nested_class in nested_classes:
         body += nested_class
-    with open("./src/main/java/com/spanner/flagfont/FlagFont.java","w+") as f:
+    with open(join(BASE,"./src/main/java/com/spanner/flagfont/FlagFont.java"),"w+") as f:
         f.write(head+body+foot)
 
 def generate_one(images,name):

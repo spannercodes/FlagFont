@@ -2,5 +2,5 @@ plugins {
     id("java")
 }
 
-group = "com.spanner"
-version = "1.0.0"
+group = "dev.spnr"
+version = "1.0.1"

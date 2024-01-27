@@ -1,6 +1,6 @@
 from os import listdir,mkdir,makedirs
-from os.path import join,dirname,abspath
-from shutil import rmtree
+from os.path import join,dirname,abspath,getmtime
+from shutil import rmtree, copyfile
 from math import floor,ceil,sqrt,log
 from PIL import Image
 
@@ -8,26 +8,7 @@ BASE = abspath(dirname(__file__))
 IMAGE_SIZE = 8
 CHARACTER_START = 0xE000
 FLAG_DIR = join(BASE,"./flags")
-
-"""
-steps:
- 1) make assets/flagfont/(textures|font)
- 2) create fonts
-  foreach:
-   1) get list of images
-   2) merge into square image
-   3) create character map
-   4) generate java class
-  a) country
-  b) pride
-
-java class should look like:
-public final class FlagFont {
-    public final class Country {
-        public static final char FLAG_CY = \uE001;
-    }
-}
-"""
+GENERATE_ITEM_MODELS = False # not yet implemented
 
 try:
     rmtree(join(BASE,"./assets"))
@@ -40,10 +21,11 @@ except:
 
 makedirs(join(BASE,"./assets/flagfont"))
 makedirs(join(BASE,"./assets/flagfont/textures/font"))
-makedirs(join(BASE,"./src/main/java/com/spanner/flagfont/"))
+makedirs(join(BASE,"./src/main/java/dev/spnr/flagfont/"))
 mkdir(join(BASE,"./assets/flagfont/font"))
 
 filenames = listdir(FLAG_DIR)
+filenames.sort(key=lambda x: getmtime(join(FLAG_DIR,x)))
 country = [f for f in filenames if f.startswith("flag_")]
 pride = [f for f in filenames if not f in country and not f=="blank.png"]
 
@@ -102,33 +84,33 @@ def create_font_json(images,name,atlas_size):
         f.write(s)
     return flag_char_map
 
-def create_nested_java_class(flag_char_map,name):
-    head = f"    public final class {name} {{\n"
+def create_nested_text_class(flag_char_map,name):
+    head = f"   public static final class {name} {{\n"
     foot = "    }\n"
     body = ""
     for flag,char in flag_char_map.items():
         java_name = flag.replace('.png','').upper()
-        body+=f"      public static final char {java_name} = '{char}';\n"
+        body+=f"    public static final char {java_name} = '{char}';\n"
     return head+body+foot
 
-def create_java_class(nested_classes):
-    head = f"""package com.spanner.flagfont;
+def create_java_class(text_classes):
+    head = f"""package dev.spnr.flagfont;
 
 public final class FlagFont {{
     
 """
     foot = "\n}"
     body = ""
-    for nested_class in nested_classes:
-        body += nested_class
-    with open(join(BASE,"./src/main/java/com/spanner/flagfont/FlagFont.java"),"w+") as f:
+    for text_class in text_classes:
+        body += text_class
+    with open(join(BASE,"./src/main/java/dev/spnr/flagfont/FlagFont.java"),"w+") as f:
         f.write(head+body+foot)
 
 def generate_one(images,name):
     atlas_size = create_atlas(images,name)
     flag_char_map = create_font_json(images,name,atlas_size)
-    country_class = create_nested_java_class(flag_char_map,name.title())
-    return country_class
+    text_class = create_nested_text_class(flag_char_map,name.title())
+    return text_class
 
 def generate_all():
     classes = []

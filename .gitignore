@@ -2,3 +2,4 @@ assets/
 src/
 build/
 .gradle/
+.idea/
